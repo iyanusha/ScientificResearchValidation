@@ -17,7 +17,6 @@
 ;; Other Constants
 (define-constant CONTRACT-OWNER tx-sender)
 (define-constant MAX-REPLICATIONS u100)
-(define-constant VALID-STATUS (list "pending" "under-review" "validated" "rejected"))
 
 ;; Data Variables
 (define-data-var next-submission-id uint u1)
@@ -62,9 +61,7 @@
 ;; Validation Functions
 (define-private (validate-ipfs-hash (hash (string-ascii 46)))
     (begin
-        (asserts! (> (len hash) u2) ERR-INVALID-IPFS-HASH)
-        ;; Check if starts with "Qm" - using proper string functions
-        (asserts! (is-eq (slice hash u0 u2) "Qm") ERR-INVALID-IPFS-HASH)
+        (asserts! (>= (len hash) u46) ERR-INVALID-IPFS-HASH)
         (ok true)
     )
 )
