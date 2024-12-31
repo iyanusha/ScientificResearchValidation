@@ -1,14 +1,24 @@
-;; Scientific Research Validation Platform
-;; Handles peer review, experiment validation, and research timestamping
+;; ScientificResearchValidation
+;; Research validation and peer review system on Stacks
 
+;; Constants
+(define-constant ERR-NOT-AUTHORIZED (err u401))
+(define-constant ERR-NOT-FOUND (err u404))
+(define-constant ERR-INVALID-STATUS (err u400))
+
+;; Data variables
+(define-data-var next-submission-id uint u1)
 (define-data-var minimum-reviewers uint u3)
 (define-data-var review-period uint u1440) ;; blocks, roughly 10 days
+
+;; Principal variables
+(define-data-var contract-owner principal tx-sender)
 
 ;; Research submission structure
 (define-map research-submissions
     { submission-id: uint }
     {
-        researcher-principal: principal,
+        researcher: principal,
         ipfs-hash: (string-ascii 46),  ;; IPFS hash of research data
         timestamp: uint,
         status: (string-ascii 20),     ;; pending, under-review, validated, rejected
@@ -40,19 +50,34 @@
     }
 )
 
+;; Read-only functions
+(define-read-only (get-submission (submission-id uint))
+    (map-get? research-submissions { submission-id: submission-id })
+)
+
+(define-read-only (get-peer-review (submission-id uint) (reviewer principal))
+    (map-get? peer-reviews { submission-id: submission-id, reviewer: reviewer })
+)
+
+(define-read-only (get-replication (submission-id uint) (replicator principal))
+    (map-get? replications { submission-id: submission-id, replicator: replicator })
+)
+
 ;; Submit new research
 (define-public (submit-research (ipfs-hash (string-ascii 46)) 
                               (methodology-hash (string-ascii 46))
                               (required-replications uint))
     (let
         (
-            (submission-id (get-next-submission-id))
+            (submission-id (var-get next-submission-id))
         )
-        (try! (stx-transfer? u100 tx-sender (as-contract tx-sender)))
+        ;; Increment the submission ID counter
+        (var-set next-submission-id (+ submission-id u1))
+        
         (map-set research-submissions
             { submission-id: submission-id }
             {
-                researcher-principal: tx-sender,
+                researcher: tx-sender,
                 ipfs-hash: ipfs-hash,
                 timestamp: block-height,
                 status: "pending",
@@ -72,10 +97,11 @@
                                  (credentials (string-ascii 64)))
     (let
         (
-            (submission (unwrap! (map-get? research-submissions { submission-id: submission-id })
-                (err u1)))
+            (submission (unwrap! (get-submission submission-id) ERR-NOT-FOUND))
         )
-        (asserts! (is-eq (get status submission) "pending") (err u2))
+        ;; Check submission status
+        (asserts! (is-eq (get status submission) "pending") ERR-INVALID-STATUS)
+        
         (map-set peer-reviews
             { submission-id: submission-id, reviewer: tx-sender }
             {
@@ -96,10 +122,11 @@
                                  (methodology-variations (string-ascii 64)))
     (let
         (
-            (submission (unwrap! (map-get? research-submissions { submission-id: submission-id })
-                (err u1)))
+            (submission (unwrap! (get-submission submission-id) ERR-NOT-FOUND))
         )
-        (asserts! (is-eq (get status submission) "under-review") (err u2))
+        ;; Check submission status
+        (asserts! (is-eq (get status submission) "under-review") ERR-INVALID-STATUS)
+        
         (map-set replications
             { submission-id: submission-id, replicator: tx-sender }
             {
@@ -113,9 +140,19 @@
     )
 )
 
-;; Private functions
-(define-private (get-next-submission-id)
-    (default-to u1
-        (get-next-id-by-type "submission")
+;; Administrative functions
+(define-public (update-minimum-reviewers (new-minimum uint))
+    (begin
+        (asserts! (is-eq tx-sender (var-get contract-owner)) ERR-NOT-AUTHORIZED)
+        (var-set minimum-reviewers new-minimum)
+        (ok true)
+    )
+)
+
+(define-public (update-review-period (new-period uint))
+    (begin
+        (asserts! (is-eq tx-sender (var-get contract-owner)) ERR-NOT-AUTHORIZED)
+        (var-set review-period new-period)
+        (ok true)
     )
 )
