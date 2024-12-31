@@ -85,6 +85,13 @@
     )
 )
 
+(define-private (validate-replications (count uint))
+    (begin
+        (asserts! (and (> count u0) (<= count MAX-REPLICATIONS)) ERR-INVALID-REPLICATIONS)
+        (ok true)
+    )
+)
+
 ;; Submit new research
 (define-public (submit-research (ipfs-hash (string-ascii 46)) 
                               (methodology-hash (string-ascii 46))
