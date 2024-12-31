@@ -92,6 +92,13 @@
     )
 )
 
+(define-private (validate-credentials (creds (string-ascii 64)))
+    (begin
+        (asserts! (> (len creds) u0) ERR-INVALID-CREDENTIALS)
+        (ok true)
+    )
+)
+
 ;; Submit new research
 (define-public (submit-research (ipfs-hash (string-ascii 46)) 
                               (methodology-hash (string-ascii 46))
