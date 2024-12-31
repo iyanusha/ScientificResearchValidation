@@ -110,6 +110,10 @@
 (define-public (submit-research (ipfs-hash (string-ascii 46)) 
                               (methodology-hash (string-ascii 46))
                               (required-replications uint))
+    (begin
+        (try! (validate-ipfs-hash ipfs-hash))
+        (try! (validate-methodology-hash methodology-hash))
+        (try! (validate-replications required-replications))
     (let
         (
             (submission-id (var-get next-submission-id))
