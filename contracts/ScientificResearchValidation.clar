@@ -5,14 +5,12 @@
 (define-constant ERR-NOT-AUTHORIZED (err u401))
 (define-constant ERR-NOT-FOUND (err u404))
 (define-constant ERR-INVALID-STATUS (err u400))
+(define-constant CONTRACT-OWNER tx-sender)
 
 ;; Data variables
 (define-data-var next-submission-id uint u1)
 (define-data-var minimum-reviewers uint u3)
 (define-data-var review-period uint u1440) ;; blocks, roughly 10 days
-
-;; Principal variables
-(define-data-var contract-owner principal tx-sender)
 
 ;; Research submission structure
 (define-map research-submissions
@@ -143,7 +141,7 @@
 ;; Administrative functions
 (define-public (update-minimum-reviewers (new-minimum uint))
     (begin
-        (asserts! (is-eq tx-sender (var-get contract-owner)) ERR-NOT-AUTHORIZED)
+        (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-NOT-AUTHORIZED)
         (var-set minimum-reviewers new-minimum)
         (ok true)
     )
@@ -151,7 +149,7 @@
 
 (define-public (update-review-period (new-period uint))
     (begin
-        (asserts! (is-eq tx-sender (var-get contract-owner)) ERR-NOT-AUTHORIZED)
+        (asserts! (is-eq tx-sender CONTRACT-OWNER) ERR-NOT-AUTHORIZED)
         (var-set review-period new-period)
         (ok true)
     )
