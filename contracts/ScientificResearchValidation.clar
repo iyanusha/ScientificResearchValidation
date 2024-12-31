@@ -62,8 +62,12 @@
 ;; Validation Functions
 (define-private (validate-ipfs-hash (hash (string-ascii 46)))
     (begin
-        (asserts! (> (len hash) u0) ERR-INVALID-IPFS-HASH)
-        (asserts! (is-eq (slice? hash 0 2) "Qm") ERR-INVALID-IPFS-HASH)
+        (asserts! (> (len hash) u2) ERR-INVALID-IPFS-HASH)
+        ;; Check if starts with "Qm"
+        (asserts! (and 
+            (is-eq (get charAt hash u0) "Q")
+            (is-eq (get charAt hash u1) "m")
+        ) ERR-INVALID-IPFS-HASH)
         (ok true)
     )
 )
