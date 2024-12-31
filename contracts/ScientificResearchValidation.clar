@@ -99,6 +99,13 @@
     )
 )
 
+(define-private (validate-verdict (v (string-ascii 10)))
+    (begin
+        (asserts! (or (is-eq v "approve") (is-eq v "reject")) ERR-INVALID-VERDICT)
+        (ok true)
+    )
+)
+
 ;; Submit new research
 (define-public (submit-research (ipfs-hash (string-ascii 46)) 
                               (methodology-hash (string-ascii 46))
