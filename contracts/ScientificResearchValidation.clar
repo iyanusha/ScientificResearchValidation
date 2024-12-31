@@ -78,6 +78,13 @@
     )
 )
 
+(define-private (validate-methodology-hash (hash (string-ascii 46)))
+    (begin
+        (asserts! (> (len hash) u0) ERR-INVALID-METHODOLOGY)
+        (ok true)
+    )
+)
+
 ;; Submit new research
 (define-public (submit-research (ipfs-hash (string-ascii 46)) 
                               (methodology-hash (string-ascii 46))
