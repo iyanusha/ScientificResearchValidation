@@ -7,6 +7,14 @@
 (define-constant ERR-INVALID-STATUS (err u400))
 (define-constant CONTRACT-OWNER tx-sender)
 
+;; Constants for validation
+(define-constant ERR-INVALID-IPFS-HASH (err u403))
+(define-constant ERR-INVALID-METHODOLOGY (err u405))
+(define-constant ERR-INVALID-REPLICATIONS (err u406))
+(define-constant ERR-INVALID-CREDENTIALS (err u407))
+(define-constant ERR-INVALID-VERDICT (err u408))
+(define-constant MAX-REPLICATIONS u100)
+
 ;; Data variables
 (define-data-var next-submission-id uint u1)
 (define-data-var minimum-reviewers uint u3)
