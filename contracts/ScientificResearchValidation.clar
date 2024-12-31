@@ -69,6 +69,15 @@
     (map-get? replications { submission-id: submission-id, replicator: replicator })
 )
 
+;; Validation functions
+(define-private (validate-ipfs-hash (hash (string-ascii 46)))
+    (begin
+        (asserts! (> (len hash) u0) ERR-INVALID-IPFS-HASH)
+        (asserts! (is-eq (slice? hash 0 2) "Qm") ERR-INVALID-IPFS-HASH)
+        (ok true)
+    )
+)
+
 ;; Submit new research
 (define-public (submit-research (ipfs-hash (string-ascii 46)) 
                               (methodology-hash (string-ascii 46))
